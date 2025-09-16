@@ -1,193 +1,387 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>טופס מלאי יומי</title>
-  <!-- React 18 + Babel from CDN -->
-  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom-client.development.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
-  <style>
-    :root{--muted:#6b7280}
-    body{min-height:100vh}
-    .name{word-break:break-word}
-  </style>
-</head>
-<body class="bg-gradient-to-b from-violet-50 via-slate-50 to-pink-50 min-h-screen">
-  <div id="root"></div>
+<html lang="he">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventory Form</title>
+    <!-- React 18 + Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom-client.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
+    <!-- TailwindCSS from CDN (precompiled) -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      /* Direction classes apply direction to children to support RTL/LTR */
+      .rtl > * {
+        direction: rtl;
+      }
+      .ltr > * {
+        direction: ltr;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
 
-  <script type="text/babel">
-    const {useState,useEffect,useMemo} = React;
+    <!-- React Application Script -->
+    <script type="text/babel">
+      const { useState, useEffect, useMemo } = React;
 
-    // ===== i18n =====
-    const LANGS={
-      he:{appTitle:"טופס מלאי יומי",subtitle:"קלט בליטרים/קופסאות. נשמר אוטומטית.",date:"תאריך",search:"חיפוש…",clear:"ניקוי",cold:"פס קר",hot:"פס חם",nines:"תשיעיות",note:(l)=>`הערה (${l})`,generalNote:"הערה כללית",share:"שליחה בווצאפ",copy:"העתקה ללוח",resetAll:"איפוס מלא",resetCat:"איפוס קטגוריה",nameCol:"שם",qtyCol:"כמות (ל׳)",addCustom:"+ פריט מותאם",jumpToInput:"קפיצה לקלט",liters:"ליטרים",boxes:"קופסאות (2 ל׳)",total:"סה\"כ",unit:"ל׳",version:"גרסה סטטית – GitHub Pages",dailyTitle:(d)=>`מלאי יומי – ${d}`,emoji:{cold:"🧊",hot:"🔥",nines:"🗂️"},shortages:"חוסרים"},
-      en:{appTitle:"Daily Inventory Form",subtitle:"Liters & 2L boxes. Auto-saved.",date:"Date",search:"Search…",clear:"Clear",cold:"Cold Line",hot:"Hot Line",nines:"Nines",note:(l)=>`Note (${l})`,generalNote:"General note",share:"Send via WhatsApp",copy:"Copy",resetAll:"Reset all",resetCat:"Reset category",nameCol:"Name",qtyCol:"Qty (L)",addCustom:"+ Custom item",jumpToInput:"Jump to input",liters:"Liters",boxes:"Boxes (2L)",total:"Total",unit:"L",version:"Static – GitHub Pages",dailyTitle:(d)=>`Daily Inventory – ${d}`,emoji:{cold:"🧊",hot:"🔥",nines:"🗂️"},shortages:"Shortages"}
-    };
-    const NAME_MAP_EN={
-      "וואפו":"Wafu","בייס שיטאקי":"Shiitake Base","ויני שיטאקי":"Shiitake Vinaigrette","אמאזו":"Amazu","סונומונו":"Sunomono","ויניגרט ווסאבי":"Wasabi Vinaigrette","סודצ׳י פונזו":"Sudachi Ponzu",
-      "דן מיסו":"Dan Miso","מייפל קוג׳י":"Maple Koji","גומה דארה":"Goma Dare","קצואובושי טסויו":"Katsuobushi Tsuyu","שמן קומבו":"Kombu Oil","פונזו":"Ponzu","איולי יוזו קושו":"Yuzu-Kosho Aioli","בייס קצבושי":"Katsuobushi Base","קרמל קצבושי":"Katsuobushi Caramel","טארה גרון":"Tare – Throat","טארה בקר":"Tare – Beef","טריאקי":"Teriyaki","רוטב כרוב":"Cabbage Sauce","אגדאשי":"Agedashi","ניטסוקה":"Nitsuke","סאקה מירין":"Sake–Mirin","נוזל יוזו":"Yuzu Liquid","קומבו דאשי":"Kombu Dashi","צ׳ילי אוממי":"Umami Chili",
-      "יקיניקו":"Yakiniku","טונקאצו":"Tonkatsu","חמאת טופנג׳ן":"Topengen Butter","שומר סונומונו":"Fennel Sunomono","פטריות מוחמצות":"Pickled Mushrooms","צ׳ילי טארה":"Chili Tare","דאי דאי":"Daidai"
-    };
+      // Translation strings for Hebrew (he) and English (en)
+      const LANGS = {
+        he: {
+          title: "טופס מלאי יומי",
+          subtitle: "קלט בליטרים/קופסאות. נשמר אוטומטית.",
+          date: "תאריך",
+          notesLabel: "הערות כלליות",
+          search: "חיפוש",
+          clear: "נקה",
+          cold: "פס קר",
+          hot: "פס חם",
+          nines: "תשיעיות",
+          custom: "פריטים נוספים",
+          addItem: "הוסף פריט",
+          namePlaceholder: "שם הפריט…",
+          categoryPlaceholder: "קטגוריה",
+          boxes: "קופסאות 2 ל׳",
+          liters: "ליטרים",
+          total: "סה\"כ",
+          language: "שפה",
+          hebrew: "עברית",
+          english: "English",
+          share: "שלח לווטסאפ",
+          shortages: "חוסרים",
+          add: "הוסף",
+        },
+        en: {
+          title: "Daily Inventory Form",
+          subtitle: "Input in liters/boxes. Autosaved.",
+          date: "Date",
+          notesLabel: "General Notes",
+          search: "Search",
+          clear: "Clear",
+          cold: "Cold Station",
+          hot: "Hot Station",
+          nines: "Nines",
+          custom: "Additional Items",
+          addItem: "Add Item",
+          namePlaceholder: "Item name…",
+          categoryPlaceholder: "Category",
+          boxes: "2 L boxes",
+          liters: "Liters",
+          total: "Total",
+          language: "Language",
+          hebrew: "Hebrew",
+          english: "English",
+          share: "Share via WhatsApp",
+          shortages: "Shortages",
+          add: "Add",
+        },
+      };
 
-    const CATEGORIES=[
-      {id:"cold", labelKey:"cold"},
-      {id:"hot", labelKey:"hot"},
-      {id:"nines", labelKey:"nines"},
-    ];
-    const DEFAULT_ITEMS={
-      cold:["וואפו","בייס שיטאקי","ויני שיטאקי","אמאזו","סונומונו","ויניגרט ווסאבי","סודצ׳י פונזו"],
-      hot:["דן מיסו","מייפל קוג׳י","גומה דארה","קצואובושי טסויו","שמן קומבו","פונזו","איולי יוזו קושו","בייס קצבושי","קרמל קצבושי","טארה גרון","טארה בקר","טריאקי","רוטב כרוב","אגדאשי","ניטסוקה","סאקה מירין","נוזל יוזו","קומבו דאשי","צ׳ילי אוממי"],
-      nines:["יקיניקו","טונקאצו","חמאת טופנג׳ן","שומר סונומונו","פטריות מוחמצות","צ׳ילי טארה","דאי דאי"],
-    };
+      // Mapping of Hebrew item names to English equivalents
+      const NAME_MAP_EN = {
+        "גומה דארה": "Goma Dare",
+        "קצואובושי טסויו": "Katsuobushi Tsuyu",
+        "רוטב כרוב": "Cabbage Sauce",
+        "שומר סונומונו": "Fennel Sunomono",
+        "וואפו": "Wafu",
+        "פונזו": "Ponzu",
+        "אוממי מיקס": "Umami Mix",
+        "מזלי קארי": "Mazli Curry",
+        "בייס שיטאקי": "Shiitake Base",
+        "קומבו דאשי": "Kombu Dashi",
+        "צ׳ילי אוממי": "Umami Chili",
+      };
 
-    const LS_KEY='inv-form-static-v2';
-    const today=new Date().toISOString().slice(0,10);
-    const emptyByCat=()=>{const o={};CATEGORIES.forEach(c=>{o[c.id]={};(DEFAULT_ITEMS[c.id]||[]).forEach(n=>o[c.id][n]=0)});return o};
-    let state = (()=>{try{const s=JSON.parse(localStorage.getItem(LS_KEY)||'null');if(s&&s.items) return s}catch(e){}return {meta:{date:today},lang:'he',search:'',items:emptyByCat(),custom:{cold:[],hot:[],nines:[]},notes:{noteCold:'',noteHot:'',noteNines:'',general:''}}})();
-    const save=()=>localStorage.setItem(LS_KEY,JSON.stringify(state));
-    const t=()=>LANGS[state.lang in LANGS?state.lang:'he'];
-    const disp=(name)=> state.lang==='en'?(NAME_MAP_EN[name]??name):name;
-    const cap=(s)=>s.charAt(0).toUpperCase()+s.slice(1);
+      // Initial inventory items: name and category
+      const INITIAL_ITEMS = [
+        { name: "גומה דארה", cat: "cold" },
+        { name: "קצואובושי טסויו", cat: "cold" },
+        { name: "רוטב כרוב", cat: "cold" },
+        { name: "שומר סונומונו", cat: "cold" },
+        { name: "וואפו", cat: "cold" },
+        { name: "אוממי מיקס", cat: "cold" },
+        { name: "מזלי קארי", cat: "hot" },
+        { name: "בייס שיטאקי", cat: "hot" },
+        { name: "פונזו", cat: "cold" },
+        { name: "קומבו דאשי", cat: "hot" },
+        { name: "צ׳ילי אוממי", cat: "hot" },
+      ];
 
-    function match(he){if(!state.search) return true; const n=state.search.toLowerCase(); return (he||'').toLowerCase().includes(n) || disp(he).toLowerCase().includes(n)}
-    const round=(n,step)=>Number((Math.round(n/step)*step).toFixed(2));
-    const splitLiters=(v)=>{v=Number(v)||0;const boxes=Math.floor(v/2);const lit=round(v-boxes*2,0.5);return {boxes,lit}};
+      // Helper to compute total liters from liters + boxes
+      function computeTotalLiters(item) {
+        return item.liters + item.boxes * 2;
+      }
 
-    function render(){
-      document.documentElement.setAttribute('dir', state.lang==='he'?'rtl':'ltr');
-      document.documentElement.setAttribute('lang', state.lang);
-      const lang=t();
-      const App=()=>(
-        <div className="max-w-xl mx-auto p-4">
-          <header className="mb-4 flex items-start justify-between gap-3">
-            <div>
-              <h1 className="text-2xl font-extrabold text-center sm:text-left bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-600 to-sky-600">{lang.appTitle}</h1>
-              <p className="text-sm text-gray-500">{lang.subtitle}</p>
-            </div>
-            <button className="border rounded-full px-3 py-1 text-sm bg-white" onClick={()=>{state.lang=state.lang==='he'?'en':'he';save();render();}}>{state.lang==='he'?'EN':'HE'}</button>
-          </header>
+      function InventoryForm() {
+        const [lang, setLang] = useState(() => localStorage.getItem('lang') || 'he');
+        const [items, setItems] = useState(() => {
+          const saved = localStorage.getItem('items');
+          if (saved) {
+            try {
+              return JSON.parse(saved);
+            } catch (e) {
+              // ignore
+            }
+          }
+          const initObj = {};
+          INITIAL_ITEMS.forEach((item) => {
+            initObj[item.name] = { liters: 0, boxes: 0, cat: item.cat };
+          });
+          return initObj;
+        });
+        const [date, setDate] = useState(() => localStorage.getItem('date') || new Date().toISOString().split('T')[0]);
+        const [notes, setNotes] = useState(() => localStorage.getItem('notes') || '');
+        const [search, setSearch] = useState('');
+        const [newItemName, setNewItemName] = useState('');
+        const [newItemCat, setNewItemCat] = useState('cold');
 
-          <section className="grid grid-cols-1 gap-3 mb-4">
-            <label className="flex flex-col gap-1">
-              <span className="text-sm">{lang.date}</span>
-              <input type="date" className="rounded-xl border px-3 py-2 bg-white" value={state.meta.date} onChange={e=>{state.meta.date=e.target.value;save();}} />
-            </label>
-            <div className="flex gap-2">
-              <div className="flex-1 flex items-center gap-2 border rounded-full bg-white px-3 py-2">
-                <span>🔎</span>
-                <input className="flex-1 bg-transparent focus:outline-none" placeholder={lang.search} value={state.search} onChange={e=>{state.search=e.target.value;save();render();}} />
+        // Persist state changes
+        useEffect(() => {
+          localStorage.setItem('items', JSON.stringify(items));
+        }, [items]);
+        useEffect(() => {
+          localStorage.setItem('date', date);
+        }, [date]);
+        useEffect(() => {
+          localStorage.setItem('notes', notes);
+        }, [notes]);
+        useEffect(() => {
+          localStorage.setItem('lang', lang);
+        }, [lang]);
+
+        // Filter names based on search term
+        const filteredNames = useMemo(() => {
+          const term = search.trim().toLowerCase();
+          if (!term) return Object.keys(items);
+          return Object.keys(items).filter((name) => {
+            const en = NAME_MAP_EN[name] || '';
+            return name.toLowerCase().includes(term) || en.toLowerCase().includes(term);
+          });
+        }, [items, search]);
+
+        // Group items by category
+        const groupedItems = useMemo(() => {
+          const groups = { cold: [], hot: [], nines: [], custom: [] };
+          Object.entries(items).forEach(([name, data]) => {
+            if (!filteredNames.includes(name)) return;
+            const cat = data.cat || 'custom';
+            if (!groups[cat]) groups[cat] = [];
+            groups[cat].push({ name, data });
+          });
+          return groups;
+        }, [items, filteredNames]);
+
+        // Adjust quantity of an item
+        const changeQuantity = (name, field, delta) => {
+          setItems((prev) => {
+            const item = prev[name];
+            const newValue = Math.max(0, parseFloat((item[field] + delta).toFixed(2)));
+            return { ...prev, [name]: { ...item, [field]: newValue } };
+          });
+        };
+
+        // Add new item
+        const handleAddItem = () => {
+          const trimmed = newItemName.trim();
+          if (!trimmed) return;
+          if (items[trimmed]) {
+            alert('Item already exists');
+            return;
+          }
+          setItems((prev) => ({ ...prev, [trimmed]: { liters: 0, boxes: 0, cat: newItemCat } }));
+          setNewItemName('');
+        };
+
+        // Share via WhatsApp
+        const handleShare = () => {
+          const l = LANGS[lang];
+          const lines = [];
+          if (date) lines.push(`${l.date}: ${date}`);
+          Object.entries(items).forEach(([name, data]) => {
+            const total = computeTotalLiters(data);
+            if (total > 0) {
+              const dName = lang === 'en' ? NAME_MAP_EN[name] || name : name;
+              lines.push(`${dName}: ${total} ${lang === 'he' ? "ל׳" : 'L'}`);
+            }
+          });
+          if (notes.trim()) lines.push(`${l.notesLabel}: ${notes.trim()}`);
+          const shortages = Object.entries(items).filter(([_, data]) => computeTotalLiters(data) === 0).map(([name]) => {
+            return lang === 'en' ? NAME_MAP_EN[name] || name : name;
+          });
+          if (shortages.length) {
+            lines.push('');
+            lines.push(`${l.shortages}:`);
+            shortages.forEach((n) => lines.push(`- ${n}`));
+          }
+          const text = lines.join('\n');
+          window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        };
+
+        const l = LANGS[lang];
+        const dirClass = lang === 'he' ? 'rtl' : 'ltr';
+
+        return (
+          <div className={`${dirClass} min-h-screen bg-gradient-to-b from-violet-50 via-slate-50 to-pink-50 text-gray-900 p-4 sm:p-6`}>
+            <div className="max-w-4xl mx-auto space-y-4">
+              {/* Header */}
+              <div className="text-center">
+                <h1 className="text-3xl font-bold mb-1">{l.title}</h1>
+                <p className="text-gray-600">{l.subtitle}</p>
               </div>
-              {state.search && <button className="text-xs" onClick={()=>{state.search='';save();render();}}>{lang.clear}</button>}
-            </div>
-          </section>
-
-          {CATEGORIES.map(cat=> (
-            <section key={cat.id} className="mb-4 rounded-2xl border bg-white/50 p-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-xl bg-gray-100 font-semibold">{lang[cat.labelKey]} {lang.emoji[cat.id]}</span>
-                <button className="text-xs underline" onClick={()=>{Object.keys(state.items[cat.id]).forEach(k=>state.items[cat.id][k]=0);state.custom[cat.id]=[];state.notes['note'+cap(cat.id)]='';save();render();}}>{lang.resetCat}</button>
+              {/* Date & language */}
+              <div className="flex flex-wrap items-center gap-4 justify-between">
+                <div className="flex items-center gap-2">
+                  <label htmlFor="date-input" className="font-medium whitespace-nowrap">{l.date}:</label>
+                  <input
+                    id="date-input"
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="border border-gray-300 rounded-lg px-2 py-1"
+                  />
+                </div>
+                <div className="flex items-center gap-2 ml-auto">
+                  <span className="font-medium whitespace-nowrap">{l.language}:</span>
+                  <button
+                    className={`px-3 py-1 rounded-lg border ${lang === 'he' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}
+                    onClick={() => setLang('he')}
+                  >
+                    {l.hebrew}
+                  </button>
+                  <button
+                    className={`px-3 py-1 rounded-lg border ${lang === 'en' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}
+                    onClick={() => setLang('en')}
+                  >
+                    {l.english}
+                  </button>
+                </div>
               </div>
-
-              <div className="flex items-center justify-between text-xs text-gray-600 px-1 mb-1"><span>{lang.nameCol}</span><span>{lang.qtyCol}</span></div>
-
-              <ul className="space-y-3">
-                {Object.keys(state.items[cat.id]).filter(n=>match(n)).map(name=>{
-                  const L=Number(state.items[cat.id][name]||0); const {boxes,lit}=splitLiters(L);
-                  return (
-                    <li key={name} className="bg-white rounded-2xl border border-gray-200 px-2 py-2 shadow-sm">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <div className="flex-1 min-w-[60%]"><div className="name font-semibold leading-tight">{disp(name)}</div>{state.lang==='en' && <div className="text-xs text-green-700 opacity-80">{name}</div>}</div>
-                        <Qty value={L} onChange={(v)=>{state.items[cat.id][name]=v;save();render();}} />
-                      </div>
-                    </li>
-                  );
-                })}
-
-                {(state.custom[cat.id]||[]).filter(r=>match(r.name||'')).map((row,idx)=>{
-                  const L=Number(row.amount||0); const {boxes,lit}=splitLiters(L);
-                  return (
-                    <li key={'c-'+idx} className="bg-white rounded-2xl border border-gray-200 px-2 py-2 shadow-sm">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <input className="flex-1 min-w-[60%] rounded-xl border px-2 py-2" placeholder={t().addCustom.replace('+ ','')} value={row.name} onChange={e=>{row.name=e.target.value;save();}} />
-                        <Qty value={L} onChange={(v)=>{row.amount=v;save();render();}} />
-                        <button className="text-xs px-2 py-1 rounded-xl border" onClick={()=>{state.custom[cat.id].splice(idx,1);save();render();}}>{lang.clear}</button>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-
-              <div className="mt-2 flex gap-2">
-                <button className="rounded-xl px-3 py-2 text-sm font-medium bg-gray-900 text-white" onClick={()=>{state.custom[cat.id].push({name:'',amount:0});save();render();}}>{lang.addCustom}</button>
+              {/* Search & notes */}
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+                <div className="flex-1">
+                  <label htmlFor="search-input" className="block font-medium mb-1">{l.search}:</label>
+                  <input
+                    id="search-input"
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder={l.search}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-1"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label htmlFor="notes-input" className="block font-medium mb-1">{l.notesLabel}:</label>
+                  <textarea
+                    id="notes-input"
+                    rows="2"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder={l.notesLabel}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-1 resize-y"
+                  ></textarea>
+                </div>
               </div>
-
-              <label className="block mt-3">
-                <span className="text-sm">{lang.note(lang[cat.labelKey])}</span>
-                <textarea rows={2} className="w-full rounded-2xl border px-3 py-2" value={state.notes['note'+cap(cat.id)]||''} onChange={e=>{state.notes['note'+cap(cat.id)]=e.target.value;save();}} />
-              </label>
-            </section>
-          ))}
-
-          <section className="mt-4">
-            <label className="flex flex-col gap-1">
-              <span className="text-sm">{lang.generalNote}</span>
-              <textarea rows={3} className="rounded-2xl border px-3 py-2" value={state.notes.general||''} onChange={e=>{state.notes.general=e.target.value;save();}} />
-            </label>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <button className="rounded-2xl px-4 py-3 font-medium bg-gray-900 text-white" onClick={()=>{const url='https://wa.me/?text='+encodeURIComponent(formatShareText());window.open(url,'_blank')}}>{lang.share}</button>
-              <button className="rounded-2xl px-4 py-3 font-medium border" onClick={()=>{navigator.clipboard.writeText(formatShareText()).then(()=>alert(state.lang==='he'?'הועתק':'Copied'))}}>{lang.copy}</button>
-              <button className="col-span-2 rounded-2xl px-4 py-3 font-medium border border-rose-300 text-rose-700 bg-white hover:bg-rose-50" onClick={()=>{if(confirm('לאפס הכול?')){state={meta:{date:today},lang:state.lang,search:'',items:emptyByCat(),custom:{cold:[],hot:[],nines:[]},notes:{noteCold:'',noteHot:'',noteNines:'',general:''}};save();render();}}}>{lang.resetAll}</button>
-            </div>
-          </section>
-
-          <footer className="text-center text-xs text-gray-500 mt-6 mb-2">{lang.version}</footer>
-        </div>
-      );
-
-      const container=document.getElementById('root');
-      const createRoot=(window.ReactDOM && ReactDOM.createRoot)?ReactDOM.createRoot:(window.ReactDOMClient && ReactDOMClient.createRoot);
-      const root=createRoot(container); root.render(<App />);
-    }
-
-    function Qty({value,onChange}){
-      const step=0.5; const boxes=Math.floor((Number(value)||0)/2); const lit=Number((Math.round(((Number(value)||0)-boxes*2)/step)*step).toFixed(2));
-      const setBoxes=(b)=>onChange(Math.max(0,b)*2+lit); const setLit=(l)=>onChange(boxes*2+Math.max(0,Number(l)||0));
-      return (
-        <div className="flex items-stretch gap-2 select-none flex-wrap sm:flex-nowrap w-full">
-          <div className="flex items-center gap-1 rounded-xl border px-2 py-1.5 bg-white shadow-sm min-w-[120px] justify-between">
-            <div className="text-xs opacity-70 mr-1">{t().boxes}</div>
-            <div className="flex items-center gap-1">
-              <button type="button" className="px-2 py-1 rounded-lg border" onClick={()=>setBoxes(Math.max(0,boxes-1))}>–</button>
-              <input inputMode="numeric" pattern="[0-9]*" value={boxes} onChange={(e)=>setBoxes(Number(e.target.value.replace(/[^0-9]/g,''))||0)} className="w-12 text-center rounded-lg border px-2 py-1" />
-              <button type="button" className="px-2 py-1 rounded-lg bg-gray-900 text-white" onClick={()=>setBoxes(boxes+1)}>+</button>
+              {/* Inventory groups */}
+              {['cold','hot','nines','custom'].map((cat) => {
+                const list = groupedItems[cat] || [];
+                if (!list.length) return null;
+                let bgColor = '';
+                if (cat === 'cold') bgColor = 'bg-blue-100';
+                else if (cat === 'hot') bgColor = 'bg-red-100';
+                else if (cat === 'nines') bgColor = 'bg-green-100';
+                else bgColor = 'bg-purple-100';
+                const titleKey = cat === 'cold' ? 'cold' : cat === 'hot' ? 'hot' : cat === 'nines' ? 'nines' : 'custom';
+                return (
+                  <div key={cat} className="rounded-xl shadow-md overflow-hidden">
+                    <div className={`${bgColor} px-4 py-2 font-semibold`}>{l[titleKey]}</div>
+                    <div className="divide-y divide-gray-200">
+                      {list.map(({ name, data }) => {
+                        const displayName = lang === 'en' ? NAME_MAP_EN[name] || name : name;
+                        return (
+                          <div key={name} className="flex flex-wrap items-center gap-2 px-4 py-2">
+                            <span className="flex-1 break-words font-medium" style={{minWidth:'40%'}}>{displayName}</span>
+                            <div className="flex items-center space-x-1 rtl:space-x-reverse">
+                              <button
+                                onClick={() => changeQuantity(name, 'boxes', -1)}
+                                disabled={data.boxes === 0}
+                                className="px-2 py-1 bg-gray-200 rounded-full disabled:opacity-50"
+                              >-</button>
+                              <span className="w-6 text-center">{data.boxes}</span>
+                              <button
+                                onClick={() => changeQuantity(name, 'boxes', 1)}
+                                className="px-2 py-1 bg-gray-200 rounded-full"
+                              >+</button>
+                              <span className="text-sm">{l.boxes}</span>
+                            </div>
+                            <div className="flex items-center space-x-1 rtl:space-x-reverse">
+                              <button
+                                onClick={() => changeQuantity(name, 'liters', -0.5)}
+                                disabled={data.liters === 0}
+                                className="px-2 py-1 bg-gray-200 rounded-full disabled:opacity-50"
+                              >-</button>
+                              <span className="w-6 text-center">{data.liters}</span>
+                              <button
+                                onClick={() => changeQuantity(name, 'liters', 0.5)}
+                                className="px-2 py-1 bg-gray-200 rounded-full"
+                              >+</button>
+                              <span className="text-sm">{l.liters}</span>
+                            </div>
+                            <span className="font-semibold text-sm">{l.total}: {computeTotalLiters(data)}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+              {/* Add item section */}
+              <div className="rounded-xl shadow-md p-4 bg-yellow-50 space-y-2">
+                <div className="font-semibold">{l.addItem}</div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    type="text"
+                    value={newItemName}
+                    onChange={(e) => setNewItemName(e.target.value)}
+                    placeholder={l.namePlaceholder}
+                    className="flex-1 border border-gray-300 rounded-lg px-3 py-1"
+                  />
+                    <select
+                    value={newItemCat}
+                    onChange={(e) => setNewItemCat(e.target.value)}
+                    className="border border-gray-300 rounded-lg px-2 py-1"
+                  >
+                    <option value="cold">{l.cold}</option>
+                    <option value="hot">{l.hot}</option>
+                    <option value="nines">{l.nines}</option>
+                    <option value="custom">{l.custom}</option>
+                  </select>
+                  <button
+                    onClick={handleAddItem}
+                    className="px-4 py-1 bg-green-500 text-white rounded-lg"
+                  >{l.add}</button>
+                </div>
+              </div>
+              {/* Share button */}
+              <div className="text-center mt-6">
+                <button
+                  onClick={handleShare}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full shadow-md"
+                >{l.share}</button>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-1 rounded-xl border px-2 py-1.5 bg-white shadow-sm min-w-[120px] justify-between">
-            <div className="text-xs opacity-70 mr-1">{t().liters}</div>
-            <div className="flex items-center gap-1">
-              <button type="button" className="px-2 py-1 rounded-lg border" onClick={()=>setLit(Math.max(0,lit-step))}>–</button>
-              <input inputMode="decimal" value={lit} onChange={(e)=>setLit(Number(e.target.value.replace(/[^0-9.]/g,''))||0)} className="w-14 text-center rounded-lg border px-2 py-1" />
-              <button type="button" className="px-2 py-1 rounded-lg bg-gray-900 text-white" onClick={()=>setLit(lit+step)}>+</button>
-            </div>
-          </div>
-          <div className="flex items-center rounded-full bg-gray-900 text-white px-3 text-xs font-semibold sm:ml-auto mt-2 sm:mt-0">{t().total}:&nbsp;{(boxes*2+lit).toFixed(1)}&nbsp;{t().unit}</div>
-        </div>
-      );
-    }
+        );
+      }
 
-    function formatShareText(){
-      const lang=t(); const unit=lang.unit; const lines=[]; lines.push(lang.dailyTitle(state.meta.date)); lines.push('');
-      CATEGORIES.forEach(cat=>{ const base=state.items[cat.id]; const nz=Object.keys(base).filter(k=>Number(base[k])>0); const cz=(state.custom[cat.id]||[]).filter(r=>r.name && Number(r.amount)>0); if(nz.length||cz.length){ lines.push(lang[cat.labelKey]+':'); nz.forEach(k=>lines.push(`• ${disp(k)} – ${base[k]} ${unit}`)); cz.forEach(r=>lines.push(`• ${r.name} – ${r.amount} ${unit}`)); lines.push(''); }});
-      const sh=[]; CATEGORIES.forEach(cat=>{ const base=state.items[cat.id]; Object.keys(base).forEach(k=>{ if(!Number(base[k])) sh.push(`• ${disp(k)}`)}); (state.custom[cat.id]||[]).forEach(r=>{ if(r.name && !Number(r.amount)) sh.push(`• ${r.name}`)});}); if(sh.length){ lines.push(lang.shortages+':'); lines.push(...sh); }
-      return lines.join('\n');
-    }
-
-    // initial render
-    render();
-  </script>
-</body>
+      const rootEl = document.getElementById('root');
+      const root = ReactDOM.createRoot(rootEl);
+      root.render(<InventoryForm />);
+    </script>
+  </body>
 </html>
